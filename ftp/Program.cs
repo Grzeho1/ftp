@@ -42,7 +42,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
     await ftpUploader.UploadToFTP(resultTable,source,ftpRemotePath);
     dbConnector.CloseConnection();
 
-    await Logger.Instance.WriteLineAsync("--------- Konec ---------\n");
+    await Logger.Instance.WriteLineAsync("---------- Konec ---------\n");
 
 
     //Environment.Exit(success ? 0 : 1);
