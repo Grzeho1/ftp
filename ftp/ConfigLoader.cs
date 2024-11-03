@@ -18,50 +18,37 @@ namespace ftp
             {
                 foreach (var line in File.ReadAllLines(filePath))
                 {
-                    var parts = line.Split('|');      // Zatím znak | protože kodování hesla používá = a dělá to bordel.
+                    // Ignorujeme prázdné řádky a komentáře
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
+                    // Rozdělení na klíč a hodnotu
+                    var parts = line.Split('=');
                     if (parts.Length == 2)
                     {
                         config[parts[0].Trim()] = parts[1].Trim();
+                      //  Console.WriteLine($"Načteno: Klíč: {parts[0].Trim()} = {parts[1].Trim()}"); // Logování 
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Chybný formát řádku: {line}");
                     }
                 }
             }
-
-            // Kontrola jestli je heslo vyplněno, pokud ne tak je potřeba vyplnit heslo.
-            if (!config.ContainsKey("sqlPassword") || string.IsNullOrWhiteSpace(config["sqlPassword"]))
-
-            {
-                Console.WriteLine("Zadejte heslo do databáze:");
-                string password = Console.ReadLine();
-                config["sqlPassword"] = EncodeBase64(password);
-                SaveConfig(filePath, config);
-
-                Environment.Exit(0);
-
-            }
             else
             {
-                config["sqlPassword"] = DecodeBase64(config["sqlPassword"]);
+                Console.WriteLine("Soubor konfigurace nebyl nalezen: " + filePath);
             }
+
+            // Výpis načtených klíčů a hodnot
+           
 
             return config;
         }
 
 
-        // Zakoduje heslo
-        private static string EncodeBase64(string plainText)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(plainText);
-
-
-            return Convert.ToBase64String(bytes);
-        }
-
-        // Dekoduje heslo
-        private static string DecodeBase64(string base64Encoded)
-        {
-            byte[] bytes = Convert.FromBase64String(base64Encoded);
-            return Encoding.UTF8.GetString(bytes);
-        }
 
         private static void SaveConfig(string filePath, Dictionary<string, string> config)
         {
