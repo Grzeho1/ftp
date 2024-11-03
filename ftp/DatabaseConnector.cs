@@ -47,7 +47,7 @@ namespace ftp
         }
 
 
-        public DataTable ExecProcedure(string procedureName, params SqlParameter[] parameters)
+        public async Task<DataTable> ExecProcedure(string procedureName, params SqlParameter[] parameters)
         {
             DataTable dataTable = new DataTable();
 
@@ -73,17 +73,39 @@ namespace ftp
                 {
                     {
                         Console.WriteLine(ex.ToString());
-                        Task task = Logger.Instance.WriteLineAsync(ex.ToString());
+                        await Logger.Instance.WriteLineAsync(ex.ToString());
                     }
 
 
                 }
-
             }
             return dataTable;
 
+        }
 
+        public async Task<byte[]> GetFileFromDtb(int id)
+        {
+            byte[]? fileData = null;
 
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                using (SqlCommand command = new SqlCommand("SELECT Dokument FROM dbo.Table_1 WHERE ID = @ID", conn))
+                {
+                    command.Parameters.AddWithValue("@ID", id);
+                   
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            fileData = reader["Dokument"] as byte[];
+                        }
+                    }
+                }
+            }
+
+            return fileData;
         }
 
     }

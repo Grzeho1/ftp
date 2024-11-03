@@ -1,9 +1,0 @@
-﻿ftpHost|ftp.drivehq.com
-ftpUser|rehyy88
-ftpPassword|Slunicko88+
-folderPath|C:\Users\Admin\Downloads\
-sqlPassword|
-sqlServer|DESKTOP-FUQ15OI\SQLEXPRESS
-sqlDatabase|testovaci
-sqlUser|tomas
-sqlPort|1433

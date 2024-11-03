@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 public class Logger : IDisposable
 {
     private readonly StreamWriter logWriter;
-    private static Logger _instance;
+    private static Logger? _instance;
     private static readonly object _lock = new object();
 
     public static Logger Instance
