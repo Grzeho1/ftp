@@ -34,7 +34,6 @@ public class Uploader
                 return;
             }
 
-           
             await Logger.Instance.WriteLineAsync("Připojeno k FTP serveru.");
 
 
@@ -43,12 +42,12 @@ public class Uploader
                 int id = (int)row["ID"];
                 string fileName;
                 string ftpRemotePath;
-                string? localPath = row["JmenoACesta"] != DBNull.Value ? row["JmenoACesta"].ToString() : string.Empty;
-
+                
                 if (source == "0")
 
                 {
-
+                    string? localPath = row["JmenoACesta"] != DBNull.Value ? row["JmenoACesta"].ToString() : string.Empty;
+                    string directoryFolder = Path.GetDirectoryName(localPath);
 
                     if (!string.IsNullOrEmpty(localPath) && File.Exists(localPath))
                     {
@@ -62,9 +61,24 @@ public class Uploader
 
                             if (status == FtpStatus.Success)
                             {
+                                //Přesunutí souboru do složky "Odeslané"
+                                string parentDir = Directory.GetParent(directoryFolder).FullName;
+                                string targetDir = Path.Combine(parentDir, "Odeslané");
+                                string targetPathFile = Path.Combine(targetDir,fileName);
                               
-                                await Logger.Instance.WriteLineAsync($"Soubor {fileName} byl úspěšně nahrán.");
+
+                                if (!Directory.Exists(targetDir))
+                                {
+                                    Directory.CreateDirectory(targetDir);
+
+                                }
+                                File.Move(localPath, targetPathFile);
+                                await Logger.Instance.WriteLineAsync($"Soubor {fileName} byl nahrán a přesunut do {targetPathFile}.");
+
                                 await UploadStatusHelios(id, 1, null); // Stav OK
+
+
+
                             }
                             else
                             {
