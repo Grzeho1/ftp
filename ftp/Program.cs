@@ -10,40 +10,40 @@ using FluentFTP;
 using ftp;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-
-// 1) je potřeba přidat něco jako TargetFolder do configu, protože se cílová složka na FTP může lišit.
-
-
-
+    // FTP
     var config = ConfigLoader.LoadConfig("Config.ini");
     string ftpHost= config["ftpHost"];
     string ftpUser= config["ftpUser"];
     string ftpPassword= config["ftpPassword"];
-    
+    // SQL
     string sqlServerName= config["sqlServer"]; ;
     string sqlDatabaseName= config["sqlDatabase"]; 
-    string sqlUser= config["sqlUser"]; ;
-    string sqlPassword= config["sqlPassword"];
+    string? sqlUser= config["sqlUser"]; ;
+    string? sqlPassword= config["sqlPassword"];
     string sqlPort= config["sqlPort"];
 
     // 0 = Ze souboru  1 = Z Databáze
     string source = config["source"]; 
     string ftpRemotePath = config["ftpRemotePath"];
+    // 0 = NE 1 = ANO
+    string importChybovych = config["importChybovych"];
 
 
 
 
+   
+    var dbConnector = new DatabaseConnector(sqlServerName, sqlPort, sqlDatabaseName, sqlUser, sqlPassword);
+    //var dbConnector = new DatabaseConnector("data source=DESKTOP-FUQ15OI\\SQLEXPRESS;initial catalog=testovaci;user id=tomas;password=123456");
 
-    // var dbConnector = new DatabaseConnector(sqlServerName, sqlPort, sqlDatabaseName, sqlUser, sqlPassword);
-    var dbConnector = new DatabaseConnector("data source=DESKTOP-FUQ15OI\\SQLEXPRESS;initial catalog=testovaci;user id=tomas;password=123456");
     dbConnector.OpenConnection();
-    DataTable resultTable = await dbConnector.ExecProcedure("dbo.hpx_COAL_OdesliFaV", new SqlParameter("@ImportChybovych", 1));
+
+    DataTable resultTable = await dbConnector.ExecProcedure("dbo.hpx_COAL_OdesliFaV", new SqlParameter("@ImportChybovych", importChybovych));
     var ftpUploader = new Uploader(dbConnector, ftpHost, ftpUser, ftpPassword);
     await ftpUploader.UploadToFTP(resultTable,source,ftpRemotePath);
+
     dbConnector.CloseConnection();
 
     await Logger.Instance.WriteLineAsync("---------- Konec ---------\n");
 
 
-    //Environment.Exit(success ? 0 : 1);
 

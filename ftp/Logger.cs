@@ -26,15 +26,20 @@ public class Logger : IDisposable
             Directory.CreateDirectory(logFolderPath);
         }
 
-        string logFilePath = Path.Combine(logFolderPath, $"Log_{DateTime.Now:yyyy-MM-dd_HHmmss}.txt");
-        logWriter = new StreamWriter(logFilePath) { AutoFlush = true };
+        
+        string logFilePath = Path.Combine(logFolderPath, $"Log_{DateTime.Now:yyyy-MM-dd}.txt");
+
+        
+        logWriter = new StreamWriter(logFilePath, append: true) { AutoFlush = true };
     }
 
     public async Task WriteLineAsync(string message)
     {
         Console.WriteLine(message);
+
         await logWriter.WriteLineAsync($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}");
     }
+
 
     public void Dispose()
     {

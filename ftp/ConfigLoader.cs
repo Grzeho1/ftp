@@ -34,12 +34,14 @@ namespace ftp
                     else
                     {
                         Console.WriteLine($"Chybný formát řádku: {line}");
+                       
                     }
                 }
             }
             else
             {
                 Console.WriteLine("Soubor konfigurace nebyl nalezen: " + filePath);
+              
             }
 
             // Výpis načtených klíčů a hodnot

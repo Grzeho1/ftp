@@ -18,11 +18,21 @@ namespace ftp
         private readonly string _connectionString;
         private SqlConnection _connection;
 
-        public DatabaseConnector(string serverName, string port, string databaseName, string userId, string password)
-       {
-           _connectionString = _connectionString = $"Data Source={serverName},{port};Network Library=DBMSSOCN;Initial Catalog={databaseName};User ID={userId};Password={password};";
-            _connection = new SqlConnection(_connectionString);
+            public DatabaseConnector(string sqlServerName, string sqlPort, string sqlDatabaseName, string? sqlUser = null, string? sqlPassword = null)
+    {
+        if (string.IsNullOrEmpty(sqlUser) || string.IsNullOrEmpty(sqlPassword))
+        {
+            // použije se Windows Auth (není user a heslo)
+            _connectionString = $"Data Source={sqlServerName},{sqlPort};Initial Catalog={sqlDatabaseName};Integrated Security=True;";
         }
+        else
+        {
+            //  použije se SQL Auth
+            _connectionString = $"Data Source={sqlServerName},{sqlPort};Initial Catalog={sqlDatabaseName};User ID={sqlUser};Password={sqlPassword};";
+        }
+
+        _connection = new SqlConnection(_connectionString);
+    }
         public DatabaseConnector(string connectionString)
         {
             _connectionString = connectionString;
@@ -41,8 +51,16 @@ namespace ftp
         {
             if (_connection.State == ConnectionState.Open)
             {
-                _connection.Close();
-               await Logger.Instance.WriteLineAsync("Odpojeno od SQL");
+                try
+                {
+                    _connection.Close();
+                    await Logger.Instance.WriteLineAsync("Odpojeno od SQL");
+                }
+                catch (SqlException ex)
+                {
+                    Console.WriteLine("Error connecting to the database: " + ex.Message);
+                    Console.WriteLine("Detailed error info: " + ex.ToString());
+                }
             }
         }
 
@@ -83,30 +101,30 @@ namespace ftp
 
         }
 
-        public async Task<byte[]> GetFileFromDtb(int id)
-        {
-            byte[]? fileData = null;
+        //public async Task<byte[]> GetFileFromDtb(int id)
+        //{
+        //    byte[]? fileData = null;
 
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
+        //    using (SqlConnection conn = new SqlConnection(_connectionString))
+        //    {
+        //        conn.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT Dokument FROM dbo.Table_1 WHERE ID = @ID", conn))
-                {
-                    command.Parameters.AddWithValue("@ID", id);
+        //        using (SqlCommand command = new SqlCommand("SELECT Dokument FROM dbo.Table_1 WHERE ID = @ID", conn))
+        //        {
+        //            command.Parameters.AddWithValue("@ID", id);
                    
-                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
-                        {
-                            fileData = reader["Dokument"] as byte[];
-                        }
-                    }
-                }
-            }
+        //            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+        //            {
+        //                if (await reader.ReadAsync())
+        //                {
+        //                    fileData = reader["Dokument"] as byte[];
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return fileData;
-        }
+        //    return fileData;
+        //}
 
     }
 }
